@@ -54,6 +54,23 @@ with st.sidebar:
     selected = option_menu('Prediction',
                            ['Ridingmower','Used_cars'],['bmi'])
 
+if selected== 'bmi':
+    st.title('bmi Classification')
+    
+    Income = st.text_input('Income')
+    LotSize = st.text_input('LotSize')
+    Riding_prediction = ''
+    if st.button('Predict'):
+        Riding_prediction = bmi_model.predict([[
+            float(Income),
+            float(LotSize)
+            ]])
+        if Riding_prediction[0]==1:
+            bmi_prediction = 'Owner'
+        else:
+           bmi_prediction = 'Non Owner'
+    st.success(bmi_prediction)
+    
 if selected== 'Ridingmower':
     st.title('Riding Mower Classification')
     
@@ -96,5 +113,6 @@ if selected == 'Used_cars':
         Price_predict = round(Price_predict[0],2)
 
     st.success(Price_predict)
+
 
 
