@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Feb 19 15:58:18 2026
+ 
 @author: BusRmutt
 """
-
+ 
 import pickle
 from streamlit_option_menu import option_menu
 import streamlit as st
-
-# โหลดโมเดล
+ 
+# Load Models
 used_car_model = pickle.load(open('Used_cars_model.sav','rb'))
 riding_model = pickle.load(open('RidingMowers_model.sav','rb'))
 bmi_model = pickle.load(open('bmi_model.sav','rb'))
-
-# ================== MAP ==================
-
+ 
+# ================== Mapping ==================
 fuel_map = {
     'Diesel': 0,
     'Electric': 1,
     'Petrol': 2
 }
-
+ 
 engine_map = {
     '800': 0,
     '1000': 1,
@@ -33,7 +33,7 @@ engine_map = {
     '4000': 8,
     '5000': 9
 }
-
+ 
 brand_map = {
     'BMW': 0,
     'Chevrolet': 1,
@@ -46,63 +46,41 @@ brand_map = {
     'Toyota': 8,
     'Volkswagen': 9
 }
-
+ 
 transmission_map = {
     'Automatic': 0,
     'Manual': 1
 }
-
-# ================== MENU ==================
-
+ 
+# ================== Sidebar ==================
 with st.sidebar:
     selected = option_menu(
-        'Menu',
-        ['BMI', 'Ridingmower', 'Used_cars']
+        'Prediction',
+        ['Ridingmower','Used_cars','bmi']
     )
-
-# ================== BMI ==================
-
-if selected == 'BMI':
-    st.title('BMI Classification')
-
-    Income = st.text_input('Income')
-    LotSize = st.text_input('LotSize')
-
-    if st.button('Predict BMI'):
-        try:
-            prediction = bmi_model.predict([[float(Income), float(LotSize)]])
-            if prediction[0] == 1:
-                result = 'Owner'
-            else:
-                result = 'Non Owner'
-            st.success(result)
-        except:
-            st.error("กรุณากรอกตัวเลขให้ครบ")
-
-# ================== RIDING MOWER ==================
-
-elif selected == 'Ridingmower':
+ 
+# ================== Riding Mower ==================
+if selected == 'Ridingmower':
     st.title('Riding Mower Classification')
-
+ 
     Income = st.text_input('Income')
     LotSize = st.text_input('LotSize')
-
-    if st.button('Predict Riding'):
-        try:
-            prediction = riding_model.predict([[float(Income), float(LotSize)]])
-            if prediction[0] == 1:
-                result = 'Owner'
-            else:
-                result = 'Non Owner'
-            st.success(result)
-        except:
-            st.error("กรุณากรอกตัวเลขให้ครบ")
-
-# ================== USED CARS ==================
-
+ 
+    if st.button('Predict'):
+        prediction = riding_model.predict([[
+            float(Income),
+            float(LotSize)
+        ]])
+ 
+        if prediction[0] == 1:
+            st.success('Owner')
+        else:
+            st.success('Non Owner')
+ 
+# ================== Used Cars ==================
 elif selected == 'Used_cars':
     st.title('ประเมินราคารถมือ 2')
-
+ 
     make_year = st.text_input('ปีที่ผลิต')
     mileage_kmpl = st.text_input('กินน้ำมันกี่ KM/L')
     engine_cc = st.selectbox('ขนาดเครื่องยนต์ (CC)', list(engine_map.keys()))
@@ -111,25 +89,42 @@ elif selected == 'Used_cars':
     brand = st.selectbox('ยี่ห้อรถ', list(brand_map.keys()))
     transmission = st.selectbox('ประเภทเกียร์', list(transmission_map.keys()))
     accidents_reported = st.text_input('จำนวนอุบัติเหตุที่เคยเกิด')
-
-    if st.button('Predict Price'):
+ 
+    if st.button('Predict'):
+        prediction = used_car_model.predict([[
+            float(make_year),
+            float(mileage_kmpl),
+            engine_map[engine_cc],
+            fuel_map[fuel_type],
+            float(owner_count),
+            brand_map[brand],
+            transmission_map[transmission],
+            float(accidents_reported)
+        ]])
+ 
+        st.success(f"ราคาประเมิน: {round(prediction[0],2)} บาท")
+ 
+# ================== BMI ==================
+elif selected == 'bmi':
+    st.title('BMI Classification')
+ 
+    gender = st.selectbox('เพศ', ['Female','Male'])
+    height = st.text_input('ส่วนสูง (cm)')
+    weight = st.text_input('น้ำหนัก (kg)')
+ 
+    if st.button('Predict'):
         try:
-            prediction = used_car_model.predict([[
-                float(make_year),
-                float(mileage_kmpl),
-                engine_map[engine_cc],
-                fuel_map[fuel_type],
-                float(owner_count),
-                brand_map[brand],
-                transmission_map[transmission],
-                float(accidents_reported)
+            # encode gender เหมือนตอน train
+            gender_value = 0 if gender == 'Female' else 1
+ 
+            prediction = bmi_model.predict([[
+                gender_value,
+                float(height),
+                float(weight)
             ]])
-
-            price = round(prediction[0], 2)
-            st.success(f"ราคาประเมิน: {price:,.2f} บาท")
-
+ 
+            st.success(f"ผลลัพธ์ BMI Class: {prediction[0]}")
+ 
         except:
             st.error("กรุณากรอกข้อมูลให้ถูกต้อง")
-
-
 
