@@ -51,7 +51,7 @@ transmission_map = {
     'Manual': 1
 }
 with st.sidebar:
-    selected = option_menu('Prediction',
+    selected = option_menu('bmi',
                            ['Ridingmower','Used_cars'],['bmi'])
 
 if selected== 'bmi':
@@ -113,6 +113,7 @@ if selected == 'Used_cars':
         Price_predict = round(Price_predict[0],2)
 
     st.success(Price_predict)
+
 
 
 
